@@ -207,7 +207,7 @@
                     companyCommission: document.getElementById('companyCommission').value
                 };
 
-                const response = await fetch('https://adepa-auto-care.vercel.app/save', {
+                const response = await fetch('/api/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
