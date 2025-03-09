@@ -46,6 +46,7 @@ const mapRowData = (row, headers) => ({
 // Initialize connection
 (async function() {
   try {
+    console.log('Connecting to Google Sheets...');
     await doc.loadInfo();
     console.log('Connected to Google Sheet:', doc.title);
   } catch (error) {
