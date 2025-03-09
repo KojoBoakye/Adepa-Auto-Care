@@ -6,11 +6,11 @@
       "use": "@vercel/node"
     },
     {
-      "src": "frontend/*",
+      "src": "public/**",
       "use": "@vercel/static"
     },
     {
-      "src": "public/*",
+      "src": "frontend/**",
       "use": "@vercel/static"
     }
   ],
@@ -20,16 +20,19 @@
       "dest": "backend/server.js"
     },
     {
+      "src": "/images/(.*)",
+      "dest": "/public/images/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
       "src": "/",
       "dest": "frontend/login.html"
     },
     {
       "src": "/(.*)",
       "dest": "frontend/$1"
-    },
-    {
-      "src": "/logo.jpeg",
-      "dest": "public/logo.jpeg"
     }
   ]
 }
