@@ -40,11 +40,11 @@ const mapRowData = (row, headers) => ({
   'Total Amount (GHS)': parseFloat(row[headers.indexOf('Total Amount (GHS)')] || 0),
   'Washer Commission (GHS)': parseFloat(row[headers.indexOf('Washer Commission (GHS)')] || 0),
   'Company Commission (GHS)': parseFloat(row[headers.indexOf('Company Commission (GHS)')] || 0),
-  'Timestamp': row[headers.indexOf('Timestamp')] || new Date().toISOString()
+  'Timestamp': row[headers.indexOf('Timestamp')] || new Date().toISOString(),
 });
 
-// Initialize connection
-(async function() {
+// Initialize connection to Google Sheets
+(async function initializeConnection() {
   try {
     console.log('Connecting to Google Sheets...');
     await doc.loadInfo();
@@ -58,13 +58,17 @@ const mapRowData = (row, headers) => ({
 app.get('/api/data', async (req, res) => {
   try {
     console.log('Fetching data from Google Sheets...');
-    await doc.loadInfo();
-    const sheet = doc.sheetsByIndex[0];
+    await doc.loadInfo(); // Ensure the document is loaded
+    const sheet = doc.sheetsByIndex[0]; // Access the first sheet
     const rows = await sheet.getRows();
     const headers = sheet.headerValues;
 
+    if (!headers || headers.length === 0) {
+      throw new Error('No headers found in the sheet.');
+    }
+
     const formattedData = rows.map(row => mapRowData(row._rawData, headers));
-    console.log('Data fetched successfully:', formattedData);
+    console.log('Data fetched successfully. Rows:', formattedData.length);
     res.json(formattedData);
   } catch (error) {
     console.error('Error fetching data:', error.message);
@@ -76,8 +80,8 @@ app.get('/api/data', async (req, res) => {
 app.post('/api/save', async (req, res) => {
   try {
     console.log('Saving data to Google Sheets...');
-    await doc.loadInfo();
-    const sheet = doc.sheetsByIndex[0];
+    await doc.loadInfo(); // Ensure the document is loaded
+    const sheet = doc.sheetsByIndex[0]; // Access the first sheet
 
     const newRow = {
       'Car Model': req.body.carModel,
@@ -92,7 +96,7 @@ app.post('/api/save', async (req, res) => {
       'Total Amount (GHS)': Number(req.body.amount).toFixed(2),
       'Washer Commission (GHS)': Number(req.body.washerCommission).toFixed(2),
       'Company Commission (GHS)': Number(req.body.companyCommission).toFixed(2),
-      'Timestamp': new Date().toISOString()
+      'Timestamp': new Date().toISOString(),
     };
 
     await sheet.addRow(newRow);
@@ -102,6 +106,11 @@ app.post('/api/save', async (req, res) => {
     console.error('Error saving data:', error.message);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
 // Start server
